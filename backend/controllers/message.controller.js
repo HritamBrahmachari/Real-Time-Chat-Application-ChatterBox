@@ -56,7 +56,7 @@ export const getMessages = async (req, res) => {
 
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, userToChatId] },
-    }).populate("messages"); //potulate gives actual messages not message refrence of id
+    }).populate("messages"); //potulate, gives actual messages not message refrence
 
     if (!conversation) return res.status(200).json([]);
 

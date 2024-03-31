@@ -26,9 +26,9 @@ const SignUp = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-w-96 mx-auto">
-      <div className="w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-0">
+      <div className="w-full p-6 bg-blue-300 rounded-md bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-10 border border-gray-400">
         <h1 className="text-3xl font-semibold text-center text-black">
-          Sign Up <span className="text-green-500"> ChatApp</span>
+          Sign Up <span className="text-[#466B7C]"> ChatApp</span>
         </h1>
         <form onSubmit={handleSubmit}>
           <div>
@@ -92,14 +92,14 @@ const SignUp = () => {
             selectedGender={inputs.gender}
           />
           <Link
-            className="text-sm hover:underline hover:text-blue-600 mt-2 inline-block"
+            className="text-sm hover:underline hover:text-sky-600 mt-2 inline-block"
             to="/login"
           >
             Already have an account?
           </Link>
           <div>
             <button
-              className="btn btn-block btn-sm mt-2 border border-slate-700"
+              className="btn btn-block  btn-sm mt-2 border border-sky-700 hover:bg-sky-300"
               disabled={loading}
             >
               {loading ? (

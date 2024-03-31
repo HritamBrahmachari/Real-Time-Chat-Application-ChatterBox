@@ -13,10 +13,10 @@ const Login = () => {
   };
   return (
     <div className="flex flex-col items-center justify-center min-w-96 mx-auto">
-      <div className="w-full p-6 rounded-lg shadow-md bg-green-400 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-0">
+      <div className="w-full p-6 bg-blue-300 rounded-md bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-10 border border-gray-400">
         <h1 className="text-3xl font-semibold text-center text-black">
           Login
-          <span className="text-green-500"> ChatApp</span>
+          <span className="text-[#466B7C]"> ChatApp</span>
         </h1>
 
         <form onSubmit={handleSubmit}>
@@ -47,14 +47,14 @@ const Login = () => {
           </div>
           <Link
             to="/signup"
-            className="text-sm  hover:underline hover:text-green-600 mt-2 inline-block"
+            className="text-sm  hover:underline hover:text-sky-600 mt-2 inline-block"
           >
             {"Don't"} have an account?
           </Link>
 
           <div>
             <button
-              className="btn btn-block btn-sm mt-2 border border-slate-700"
+              className="btn btn-block btn-sm mt-2 border border-slate-700 hover:bg-sky-300"
               disabled={loading}
             >
               {loading ? (

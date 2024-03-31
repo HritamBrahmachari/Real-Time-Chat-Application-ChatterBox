@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    // createdAt, updatedAt => Member since <createdAt>
+    // createdAt, updatedAt => Member since <createdAt>|this is an example use case of timestamps.
   },
   { timestamps: true }
 );
