@@ -16,6 +16,22 @@ This project is a chat application built using Node.js, Express, MongoDB, and So
 - **dotenv**: dotenv is used for loading environment variables from a .env file.
 - **jsonwebtoken**: jsonwebtoken is used for generating and verifying JSON web tokens for user authentication.
 
+
+## Preview 
+
+* Signup
+
+![1hey](https://github.com/Anubhav-dev-web/Hey-/assets/80172002/757f1860-250e-4dbe-b5e6-81867dc9812f)
+
+* Login
+
+![2hey](https://github.com/Anubhav-dev-web/Hey-/assets/80172002/84c8bf2d-924c-4961-b635-68821b5da047)
+
+* Home
+
+![3hey](https://github.com/Anubhav-dev-web/Hey-/assets/80172002/4003469c-5bca-483b-93fe-83e015879186)
+
+
 ## Features
 
 - Real-time chat functionality with Socket.IO.
