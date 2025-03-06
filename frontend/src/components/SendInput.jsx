@@ -3,7 +3,6 @@ import { IoSend } from "react-icons/io5";
 import axios from "axios";
 import useUserStore from '../stores/userStore';
 import useMessageStore from '../stores/messageStore';
-import { BASE_URL } from '..';
 
 const SendInput = () => {
     const [message, setMessage] = useState("");
@@ -14,11 +13,10 @@ const SendInput = () => {
     const onSubmitHandler = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(`${BASE_URL}/api/v1/message/send/${selectedUser?._id}`, {message}, {
+            const res = await axios.post(`/api/v1/message/send/${selectedUser?._id}`, {message}, {
                 headers:{
                     'Content-Type':'application/json'
-                },
-                withCredentials:true
+                }
             });
             setMessages([...messages, res?.data?.newMessage])
         } catch (error) {

@@ -3,8 +3,13 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { Toaster } from "react-hot-toast";
+import axios from 'axios';
 
 export const BASE_URL="http://localhost:8080";
+
+// Global axios configuration
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = BASE_URL;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

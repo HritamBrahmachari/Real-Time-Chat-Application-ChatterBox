@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import toast from "react-hot-toast"
 import axios from "axios";
 import useUserStore from '../stores/userStore';
-import { BASE_URL } from '..';
 
 const Login = () => {
   const [user, setUser] = useState({
@@ -16,11 +15,10 @@ const Login = () => {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${BASE_URL}/api/v1/user/login`, user, {
+      const response = await axios.post('/api/v1/user/login', user, {
         headers: {
           'Content-Type': 'application/json'
-        },
-        withCredentials: true
+        }
       });
       
       if (response?.data) {

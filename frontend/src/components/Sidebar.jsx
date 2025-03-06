@@ -6,8 +6,7 @@ import toast from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
 import useUserStore from '../stores/userStore';
 import useMessageStore from '../stores/messageStore';
-import { BASE_URL } from '..';
- 
+
 const Sidebar = () => {
     const [search, setSearch] = useState("");
     const otherUsers = useUserStore((state) => state.otherUsers);
@@ -20,7 +19,7 @@ const Sidebar = () => {
 
     const logoutHandler = async () => {
         try {
-            const res = await axios.get(`${BASE_URL}/api/v1/user/logout`);
+            const res = await axios.get('/api/v1/user/logout');
             navigate("/login");
             toast.success(res.data.message);
             setAuthUser(null);
