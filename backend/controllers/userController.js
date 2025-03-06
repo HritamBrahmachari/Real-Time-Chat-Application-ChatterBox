@@ -1,6 +1,7 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 export const register = async (req, res) => {
     try {
@@ -37,6 +38,32 @@ export const register = async (req, res) => {
         console.log(error);
     }
 };
+export const searchUsers = async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.status(400).json({ message: "Search query is required" });
+        }
+
+        const users = await User.find({
+            $and: [
+                { 
+                    $or: [
+                        { username: { $regex: query, $options: 'i' } },
+                        { fullName: { $regex: query, $options: 'i' } }
+                    ]
+                },
+                { isSystemUser: { $ne: true } }
+            ]
+        }).select("-password");
+
+        return res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Error searching users" });
+    }
+};
+
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -57,13 +84,47 @@ export const login = async (req, res) => {
                 success: false
             })
         };
+
+        // Check if user is logging in for the first time
+        if (!user.hasSeenWelcome) {
+            // Find or create system user
+            let systemUser = await User.findOne({ isSystemUser: true });
+            if (!systemUser) {
+                systemUser = await User.create({
+                    fullName: "ChatterBox System",
+                    username: "system",
+                    password: await bcrypt.hash(Math.random().toString(36), 10),
+                    gender: "system",
+                    isSystemUser: true,
+                    profilePhoto: "https://avatar.iran.liara.run/public/boy?username=system"
+                });
+            }
+
+            // Create welcome message
+            const Message = mongoose.model('Message');
+            await Message.create({
+                senderId: systemUser._id,
+                receiverId: user._id,
+                message: "Welcome to ChatterBox! Start chatting by searching for users in the search box."
+            });
+
+            // Mark user as having seen welcome message
+            user.hasSeenWelcome = true;
+            await user.save();
+        }
+
         const tokenData = {
             userId: user._id
         };
 
         const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({
+        return res.status(200).cookie("token", token, { 
+            maxAge: 1 * 24 * 60 * 60 * 1000, 
+            httpOnly: true, 
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production'
+        }).json({
             _id: user._id,
             username: user.username,
             fullName: user.fullName,
@@ -76,7 +137,12 @@ export const login = async (req, res) => {
 }
 export const logout = (req, res) => {
     try {
-        return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+        return res.status(200).cookie("token", "", { 
+            maxAge: 0,
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production'
+        }).json({
             message: "logged out successfully."
         })
     } catch (error) {

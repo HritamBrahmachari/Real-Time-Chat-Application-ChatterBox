@@ -5,20 +5,21 @@ import useUserStore from '../stores/userStore';
 const useGetOtherUsers = () => {
     const setOtherUsers = useUserStore((state) => state.setOtherUsers);
 
-    useEffect(() => {
-        const fetchOtherUsers = async () => {
-            try {
-                const res = await axios.get('/api/v1/user');
-                // store
-                console.log("other users -> ",res);
-                setOtherUsers(res.data);
-            } catch (error) {
-                console.log(error);
+    const searchUsers = async (query) => {
+        try {
+            if (!query.trim()) {
+                setOtherUsers([]);
+                return;
             }
+            const res = await axios.get(`/api/v1/user/search?query=${query}`);
+            setOtherUsers(res.data);
+        } catch (error) {
+            console.log(error);
+            setOtherUsers([]);
         }
-        fetchOtherUsers();
-    }, [setOtherUsers])
+    };
 
+    return { searchUsers };
 }
 
 export default useGetOtherUsers

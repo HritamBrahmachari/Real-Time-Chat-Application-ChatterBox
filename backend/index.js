@@ -17,12 +17,18 @@ app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
 app.use(cookieParser());
 
+// Enable CORS with credentials
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: 'http://localhost:3000', // String instead of array for better cookie handling
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
-})); 
+}));
+
+// Trust the first proxy if in production
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 
 // routes

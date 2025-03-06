@@ -20,8 +20,16 @@ const userModel = new mongoose.Schema({
     },
     gender:{
         type:String,
-        enum:["male", "female"],
+        enum:["male", "female", "system"],
         required:true
+    },
+    hasSeenWelcome:{
+        type: Boolean,
+        default: false
+    },
+    isSystemUser:{
+        type: Boolean,
+        default: false
     }
 }, {timestamps:true});
 export const User = mongoose.model("User", userModel);

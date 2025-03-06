@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
 import useUserStore from '../stores/userStore';
 import useMessageStore from '../stores/messageStore';
+import useGetOtherUsers from '../hooks/useGetOtherUsers';
 
 const Sidebar = () => {
     const [search, setSearch] = useState("");
@@ -14,6 +15,7 @@ const Sidebar = () => {
     const setOtherUsers = useUserStore((state) => state.setOtherUsers);
     const setSelectedUser = useUserStore((state) => state.setSelectedUser);
     const setMessages = useMessageStore((state) => state.setMessages);
+    const { searchUsers } = useGetOtherUsers();
 
     const navigate = useNavigate();
 
@@ -30,17 +32,12 @@ const Sidebar = () => {
             console.log(error);
         }
     }
+
     const searchSubmitHandler = (e) => {
         e.preventDefault();
-        const conversationUser = otherUsers?.find((user)=> user.fullName.toLowerCase().includes(search.toLowerCase()));
-        if(conversationUser){
-            setOtherUsers([conversationUser]);
-        }else{
-            toast.error("User not found!");
-        }
+        searchUsers(search);
     }
 
-    console.log(otherUsers); 
     return (
         <div className='border-r border-slate-500 p-4 flex flex-col'>
             <form onSubmit={searchSubmitHandler} action="" className='flex items-center gap-2'>
@@ -48,7 +45,7 @@ const Sidebar = () => {
                     value={search}
                     onChange={(e)=>setSearch(e.target.value)}
                     className='input input-bordered rounded-md bg-green-950 placeholder:text-white' type="text"
-                    placeholder='Search...'
+                    placeholder='Search users...'
                 />
                 <button type='submit' className='btn bg-green-950 text-white'>
                     <BiSearchAlt2 className='w-6 h-6 outline-none'/>
@@ -61,7 +58,6 @@ const Sidebar = () => {
             </div>
         </div>
     )
-    
 }
 
 export default Sidebar

@@ -8,10 +8,12 @@ const useUserStore = create(
       otherUsers: null,
       selectedUser: null,
       onlineUsers: null,
+      addedUsers: [],
       setAuthUser: (user) => set({ authUser: user }),
       setOtherUsers: (users) => set({ otherUsers: users }),
       setSelectedUser: (user) => set({ selectedUser: user }),
       setOnlineUsers: (users) => set({ onlineUsers: users }),
+      setAddedUsers: (users) => set({ addedUsers: users }),
     }),
     {
       name: 'user-storage',
