@@ -27,6 +27,25 @@ const Login = () => {
     }
   };
 
+  // Function to safely store token in both storage types for cross-mode compatibility
+  const storeAuthToken = (token) => {
+    // Try localStorage first
+    try {
+      localStorage.setItem('auth_token', token);
+      console.log("Token stored in localStorage");
+    } catch (err) {
+      console.warn("Could not store token in localStorage", err);
+    }
+    
+    // Also try sessionStorage as a backup (works better in incognito)
+    try {
+      sessionStorage.setItem('auth_token', token);
+      console.log("Token stored in sessionStorage");
+    } catch (err) {
+      console.warn("Could not store token in sessionStorage", err);
+    }
+  };
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     if (isLoading) return;
@@ -44,9 +63,9 @@ const Login = () => {
         // Backend sends user data directly in response
         setAuthUser(response.data);
         
-        // Store token in localStorage as a fallback for environments where cookies don't work
+        // Store token in both storage options for better compatibility
         if (response.data.token) {
-          localStorage.setItem('auth_token', response.data.token);
+          storeAuthToken(response.data.token);
         }
         
         // Fetch recent conversations after login

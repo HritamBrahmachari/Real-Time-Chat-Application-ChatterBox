@@ -8,7 +8,7 @@ import io from "socket.io-client";
 import useUserStore from './stores/userStore';
 import useSocketStore from './stores/socketStore';
 import toast from "react-hot-toast";
-import { BASE_URL } from './utils/axiosConfig';
+import { BASE_URL, checkApiHealth, getAuthToken } from './utils/axiosConfig';
 
 // Create AppWrapper to use hooks that require router context
 const AppWrapper = () => {
@@ -17,68 +17,66 @@ const AppWrapper = () => {
   const setOnlineUsers = useUserStore((state) => state.setOnlineUsers);
   const socket = useSocketStore((state) => state.socket);
   const setSocket = useSocketStore((state) => state.setSocket);
+  const [apiStatus, setApiStatus] = useState({ checked: false, available: false });
+  
+  // Check API health when app loads
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      const status = await checkApiHealth();
+      setApiStatus({ checked: true, available: status.available });
+      
+      if (status.available) {
+        toast.success("Connected to server successfully!");
+      } else {
+        toast.error(
+          `Cannot connect to server at ${BASE_URL}. Please check your connection.`,
+          { duration: 5000, id: "server-error" }
+        );
+      }
+    };
+    
+    checkBackendHealth();
+  }, []);
   
   // Determine if current route is login or signup
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
   useEffect(() => {
-    if(authUser){
-      // Use try/catch to handle connection issues
+    if(authUser && apiStatus.available){
       try {
         console.log("Attempting to connect to socket at:", BASE_URL);
         
+        // Get auth token for socket authentication
+        const token = getAuthToken();
+        
         const socketio = io(BASE_URL, {
           query: {
-            userId: authUser._id
+            userId: authUser._id,
+            token: token // Include token in query
+          },
+          auth: {
+            token: token // Include token in auth object (newer socket.io versions)
           },
           withCredentials: true,
-          path: "/socket.io/",
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          timeout: 20000,
-          transports: ['websocket', 'polling'],
-          autoConnect: false, // Don't connect automatically
-          forceNew: true, // Force a new connection
-          closeOnBeforeunload: true // Close connection when page is closed
+          reconnectionAttempts: 3,
+          timeout: 10000,
+          transports: ['websocket', 'polling']
         });
-
-        // Set up event handlers
+        
         socketio.on('connect', () => {
           console.log("Socket connected successfully with ID:", socketio.id);
           toast.success("Connected to chat server!");
         });
-
+        
         socketio.on('connect_error', (err) => {
           console.error('Socket connection error:', err.message);
-          toast.error(`Connection error: ${err.message}. Retrying...`);
+          toast.error(`Connection error: ${err.message}`);
         });
-
-        socketio.on('connect_timeout', () => {
-          console.error('Socket connection timeout');
-          toast.error('Connection timeout. Please check your network.');
-        });
-
-        socketio.on('error', (error) => {
-          console.error('Socket error:', error);
-          toast.error('Socket error occurred');
-        });
-
-        socketio.on('disconnect', (reason) => {
-          console.log('Socket disconnected:', reason);
-          if (reason === 'io server disconnect') {
-            toast.error('Disconnected from server. Reconnecting...');
-            socketio.connect();
-          }
-        });
-
+        
         socketio.on('getOnlineUsers', (onlineUsers) => {
           console.log("Received online users:", onlineUsers);
           setOnlineUsers(onlineUsers);
         });
-
-        // Now connect
-        socketio.connect();
         
         setSocket(socketio);
         
@@ -97,10 +95,17 @@ const AppWrapper = () => {
         setSocket(null);
       }
     }
-  }, [authUser]);
+  }, [authUser, apiStatus.available]);
 
   return (
     <div className={`p-4 h-screen flex items-center justify-center ${isAuthPage ? 'auth-page' : 'app-page'}`}>
+      {/* Show server status message if backend is not available */}
+      {apiStatus.checked && !apiStatus.available && (
+        <div className="fixed top-0 left-0 right-0 bg-red-600 text-white p-2 text-center">
+          Backend server is not available. Please check connection.
+        </div>
+      )}
+      
       {location.pathname === '/' && <HomePage />}
       {location.pathname === '/signup' && <Signup />}
       {location.pathname === '/login' && <Login />}

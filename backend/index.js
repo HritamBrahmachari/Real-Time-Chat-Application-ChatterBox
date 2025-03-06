@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 
 dotenv.config();
-connectDB(); // Call this ONCE at startup
+connectDB();
 
 const app = express();
 
@@ -16,13 +16,26 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS and cookie configuration
-const FRONTEND_URL = "https://real-time-chat-application-chatter-box.vercel.app";
-const isProduction = process.env.NODE_ENV === "production";
+// Define frontend URLs for both environments
+const PRODUCTION_FRONTEND_URL = "https://stunning-longma-a00b96.netlify.app";
+const LOCAL_FRONTEND_URL = "http://localhost:3000";
 
-// Enhanced CORS setup
+// Determine environment and set appropriate URLs
+const isProduction = process.env.NODE_ENV === "production";
+const FRONTEND_URL = isProduction ? PRODUCTION_FRONTEND_URL : LOCAL_FRONTEND_URL;
+
+// Enhanced CORS setup that works for both environments
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: function(origin, callback) {
+    const allowedOrigins = [PRODUCTION_FRONTEND_URL, LOCAL_FRONTEND_URL];
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('Blocked origin:', origin);
+      callback(null, true); // During development, allow all origins
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
@@ -30,32 +43,21 @@ app.use(cors({
     "Authorization", 
     "X-Requested-With", 
     "Accept", 
-    "Origin",
-    "Access-Control-Allow-Headers"
-  ],
-  exposedHeaders: ["set-cookie"],
-  optionsSuccessStatus: 200
+    "Origin"
+  ]
 }));
-
-// Cookie security settings
-app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use((req, res, next) => {
-  res.cookie('cookieName', 'cookieValue', {
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    domain: isProduction ? '.vercel.app' : undefined,
-    httpOnly: true
-  });
-  next();
-});
 
 // Explicit OPTIONS handler for preflight
 app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', FRONTEND_URL);
+  const origin = req.headers.origin;
+  if (origin === PRODUCTION_FRONTEND_URL || origin === LOCAL_FRONTEND_URL) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    res.header('Access-Control-Allow-Origin', FRONTEND_URL);
+  }
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Expose-Headers', 'set-cookie');
   res.status(200).send();
 });
 
@@ -63,13 +65,13 @@ app.options('*', (req, res) => {
 app.get("/api/health", (req, res) => {
   res.status(200).json({ 
     status: "ok",
-    environment: process.env.NODE_ENV,
+    environment: process.env.NODE_ENV || "development",
     frontendURL: FRONTEND_URL
   });
 });
 
 // Enable trust proxy for secure cookies in production
-if (process.env.NODE_ENV === "production") {
+if (isProduction) {
   app.set("trust proxy", 1);
 }
 
