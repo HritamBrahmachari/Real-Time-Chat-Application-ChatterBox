@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { setOtherUsers } from '../redux/userSlice';
+import useUserStore from '../stores/userStore';
 import { BASE_URL } from '..';
 
 const useGetOtherUsers = () => {
-    const dispatch = useDispatch();
+    const setOtherUsers = useUserStore((state) => state.setOtherUsers);
 
     useEffect(() => {
         const fetchOtherUsers = async () => {
@@ -14,13 +13,13 @@ const useGetOtherUsers = () => {
                 const res = await axios.get(`${BASE_URL}/api/v1/user`);
                 // store
                 console.log("other users -> ",res);
-                dispatch(setOtherUsers(res.data));
+                setOtherUsers(res.data);
             } catch (error) {
                 console.log(error);
             }
         }
         fetchOtherUsers();
-    }, [])
+    }, [setOtherUsers])
 
 }
 

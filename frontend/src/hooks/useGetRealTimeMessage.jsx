@@ -1,16 +1,16 @@
 import { useEffect } from "react";
-import {useSelector, useDispatch} from "react-redux";
-import { setMessages } from "../redux/messageSlice";
+import useSocketStore from "../stores/socketStore";
+import useMessageStore from "../stores/messageStore";
 
 const useGetRealTimeMessage = () => {
-    const {socket} = useSelector(store=>store.socket);
-    const {messages} = useSelector(store=>store.message);
-    const dispatch = useDispatch();
+    const socket = useSocketStore((state) => state.socket);
+    const messages = useMessageStore((state) => state.messages);
+    const setMessages = useMessageStore((state) => state.setMessages);
     useEffect(()=>{
         socket?.on("newMessage", (newMessage)=>{
-            dispatch(setMessages([...messages, newMessage]));
+            setMessages([...messages, newMessage]);
         });
         return () => socket?.off("newMessage");
-    },[setMessages, messages]);
+    },[socket, messages, setMessages]);
 };
 export default useGetRealTimeMessage;

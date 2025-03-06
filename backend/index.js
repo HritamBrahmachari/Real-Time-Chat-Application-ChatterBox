@@ -16,11 +16,8 @@ const PORT = process.env.PORT || 5000;
 app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
 app.use(cookieParser());
-const corsOption={
-    origin:'https://illustrious-lebkuchen-30a599.netlify.app',
-    credentials:true
-};
-app.use(cors(corsOption)); 
+
+app.use(cors()); 
 
 
 // routes
@@ -32,4 +29,3 @@ server.listen(PORT, ()=>{
     connectDB();
     console.log(`Server listen at port ${PORT}`);
 });
-

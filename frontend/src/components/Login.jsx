@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from "react-hot-toast"
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { setAuthUser } from '../redux/userSlice';
+import useUserStore from '../stores/userStore';
 import { BASE_URL } from '..';
 
 const Login = () => {
@@ -11,24 +10,31 @@ const Login = () => {
     username: "",
     password: "",
   });
-  const dispatch = useDispatch();
+  const setAuthUser = useUserStore((state) => state.setAuthUser);
   const navigate = useNavigate();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${BASE_URL}/api/v1/user/login`, user, {
+      const response = await axios.post(`${BASE_URL}/api/v1/user/login`, user, {
         headers: {
           'Content-Type': 'application/json'
         },
         withCredentials: true
       });
-      navigate("/");
-      console.log(res);
-      dispatch(setAuthUser(res.data));
+      
+      if (response?.data) {
+        // Backend sends user data directly in response
+        setAuthUser(response.data);
+        navigate("/");
+      } else {
+        toast.error("Invalid response from server");
+      }
     } catch (error) {
-      toast.error(error.response.data.message);
-      console.log(error);
+      console.log('Login error:', error);
+      // Check if error has response and message
+      const errorMessage = error?.response?.data?.message || 'An error occurred during login';
+      toast.error(errorMessage);
     }
     setUser({
       username: "",

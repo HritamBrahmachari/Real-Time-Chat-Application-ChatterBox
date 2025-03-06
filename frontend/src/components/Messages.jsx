@@ -1,13 +1,13 @@
 import React from 'react';
 import Message from './Message';
 import useGetMessages from '../hooks/useGetMessages';
-import { useSelector } from "react-redux";
+import useMessageStore from '../stores/messageStore';
 import useGetRealTimeMessage from '../hooks/useGetRealTimeMessage';
 
 const Messages = () => {
     useGetMessages(); // Fetch initial messages
     useGetRealTimeMessage(); // Listen for real-time updates
-    const { messages } = useSelector(store => store.message);
+    const messages = useMessageStore((state) => state.messages);
 
     // Check if messages are loaded
     if (!messages) {

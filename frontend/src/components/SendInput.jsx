@@ -1,15 +1,15 @@
 import React, {useState } from 'react'
 import { IoSend } from "react-icons/io5";
 import axios from "axios";
-import {useDispatch,useSelector} from "react-redux";
-import { setMessages } from '../redux/messageSlice';
+import useUserStore from '../stores/userStore';
+import useMessageStore from '../stores/messageStore';
 import { BASE_URL } from '..';
 
 const SendInput = () => {
     const [message, setMessage] = useState("");
-    const dispatch = useDispatch();
-    const {selectedUser} = useSelector(store=>store.user);
-    const {messages} = useSelector(store=>store.message);
+    const selectedUser = useUserStore((state) => state.selectedUser);
+    const messages = useMessageStore((state) => state.messages);
+    const setMessages = useMessageStore((state) => state.setMessages);
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
@@ -20,7 +20,7 @@ const SendInput = () => {
                 },
                 withCredentials:true
             });
-            dispatch(setMessages([...messages, res?.data?.newMessage]))
+            setMessages([...messages, res?.data?.newMessage])
         } catch (error) {
             console.log(error);
         } 

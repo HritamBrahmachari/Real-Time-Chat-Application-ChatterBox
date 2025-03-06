@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { useSelector } from "react-redux";
+import useUserStore from '../stores/userStore';
 
 const Message = ({ message }) => {
     const scroll = useRef();
-    const { authUser, selectedUser } = useSelector(store => store.user);
+    const authUser = useUserStore((state) => state.authUser);
+    const selectedUser = useUserStore((state) => state.selectedUser);
 
     useEffect(() => {
         scroll.current?.scrollIntoView({ behavior: "smooth" });

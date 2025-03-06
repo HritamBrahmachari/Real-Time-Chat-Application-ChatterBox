@@ -1,13 +1,13 @@
 import React from 'react'
 import OtherUser from './OtherUser';
 import useGetOtherUsers from '../hooks/useGetOtherUsers';
-import {useSelector} from "react-redux";
+import useUserStore from '../stores/userStore';
 
 
 const OtherUsers = () => {
     // my custom hook
     useGetOtherUsers();
-    const {otherUsers} = useSelector(store=>store.user);
+    const otherUsers = useUserStore((state) => state.otherUsers);
     if (!otherUsers) return; // early return in react
      
     return (

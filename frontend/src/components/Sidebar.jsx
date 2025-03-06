@@ -4,15 +4,17 @@ import OtherUsers from './OtherUsers';
 import axios from "axios";
 import toast from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
-import {useSelector, useDispatch} from "react-redux";
-import { setAuthUser, setOtherUsers, setSelectedUser } from '../redux/userSlice';
-import { setMessages } from '../redux/messageSlice';
+import useUserStore from '../stores/userStore';
+import useMessageStore from '../stores/messageStore';
 import { BASE_URL } from '..';
  
 const Sidebar = () => {
     const [search, setSearch] = useState("");
-    const {otherUsers} = useSelector(store=>store.user);
-    const dispatch = useDispatch();
+    const otherUsers = useUserStore((state) => state.otherUsers);
+    const setAuthUser = useUserStore((state) => state.setAuthUser);
+    const setOtherUsers = useUserStore((state) => state.setOtherUsers);
+    const setSelectedUser = useUserStore((state) => state.setSelectedUser);
+    const setMessages = useMessageStore((state) => state.setMessages);
 
     const navigate = useNavigate();
 
@@ -21,10 +23,10 @@ const Sidebar = () => {
             const res = await axios.get(`${BASE_URL}/api/v1/user/logout`);
             navigate("/login");
             toast.success(res.data.message);
-            dispatch(setAuthUser(null));
-            dispatch(setMessages(null));
-            dispatch(setOtherUsers(null));
-            dispatch(setSelectedUser(null));
+            setAuthUser(null);
+            setMessages(null);
+            setOtherUsers(null);
+            setSelectedUser(null);
         } catch (error) {
             console.log(error);
         }
@@ -33,11 +35,13 @@ const Sidebar = () => {
         e.preventDefault();
         const conversationUser = otherUsers?.find((user)=> user.fullName.toLowerCase().includes(search.toLowerCase()));
         if(conversationUser){
-            dispatch(setOtherUsers([conversationUser]));
+            setOtherUsers([conversationUser]);
         }else{
             toast.error("User not found!");
         }
     }
+
+    console.log(otherUsers); 
     return (
         <div className='border-r border-slate-500 p-4 flex flex-col'>
             <form onSubmit={searchSubmitHandler} action="" className='flex items-center gap-2'>
@@ -58,6 +62,7 @@ const Sidebar = () => {
             </div>
         </div>
     )
+    
 }
 
 export default Sidebar
