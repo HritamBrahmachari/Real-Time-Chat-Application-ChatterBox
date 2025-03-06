@@ -7,9 +7,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors:{
-        origin: ['http://localhost:3000', 'https://messaging-app-1-4gsh.onrender.com'],
+        origin: '*',
         methods: ['GET', 'POST'],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
     },
 });
 
