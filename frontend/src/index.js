@@ -5,7 +5,7 @@ import App from './App';
 import { Toaster } from "react-hot-toast";
 import axios from 'axios';
 
-export const BASE_URL="https://backend-real-time-chat-application-chatter-box-te3b.vercel.app";
+export const BASE_URL="https://backend-real-time-chat-application-chatter-box-te3b.vercel.app/";
 
 // Global axios configuration
 axios.defaults.withCredentials = true;
