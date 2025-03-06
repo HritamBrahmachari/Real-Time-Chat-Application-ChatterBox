@@ -6,35 +6,18 @@ import { User } from "../models/userModel.js";
 const app = express();
 const server = http.createServer(app);
 
-// CORS configuration with multiple allowed origins - keep consistent with main app
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://real-time-chat-application-chatter-box.vercel.app',
-  'https://chatterbox-frontend.vercel.app'
-];
+// Match this with the frontend URL - keep it simple and direct
+const FRONTEND_URL = "https://real-time-chat-application-chatter-box.vercel.app";
 
-console.log('Socket.io allowed origins:', allowedOrigins);
+console.log('Socket.io allowing origin:', FRONTEND_URL);
 
+// Configure socket.io with explicit CORS settings
 const io = new Server(server, {
     cors: {
-        origin: function(origin, callback) {
-            // Allow requests with no origin
-            if (!origin) return callback(null, true);
-            
-            if (allowedOrigins.indexOf(origin) !== -1) {
-                return callback(null, true);
-            } else {
-                console.log('Origin blocked by Socket.IO CORS:', origin);
-                // During development/debugging, allow all origins
-                if (process.env.NODE_ENV !== 'production') {
-                    return callback(null, true);
-                }
-                return callback(new Error('Socket.IO CORS not allowed'), false);
-            }
-        },
+        origin: FRONTEND_URL,
         methods: ['GET', 'POST'],
         credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization']
+        allowedHeaders: ['Content-Type', 'Authorization'],
     },
     path: '/socket.io/',
     serveClient: false,

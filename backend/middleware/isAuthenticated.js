@@ -1,6 +1,11 @@
 import jwt from "jsonwebtoken";
 
 const isAuthenticated = (req, res, next) => {
+    // Skip authentication check for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+
     try {
         // First check the Authorization header (for API clients)
         const authHeader = req.headers.authorization;
