@@ -8,23 +8,43 @@ const server = http.createServer(app);
 
 // Match this with the frontend URL - keep it simple and direct
 const FRONTEND_URL = "https://real-time-chat-application-chatter-box.vercel.app";
+const isProduction = process.env.NODE_ENV === 'production';
 
 console.log('Socket.io allowing origin:', FRONTEND_URL);
+console.log('Environment:', process.env.NODE_ENV);
 
-// Configure socket.io with explicit CORS settings
+// Configure socket.io with enhanced settings
 const io = new Server(server, {
     cors: {
         origin: FRONTEND_URL,
-        methods: ['GET', 'POST'],
+        methods: ['GET', 'POST', 'OPTIONS'],
         credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'X-Requested-With',
+            'Accept',
+            'Origin'
+        ]
     },
+    allowEIO3: true, // Allow Engine.IO version 3
     path: '/socket.io/',
     serveClient: false,
     pingTimeout: 60000,
     pingInterval: 25000,
     connectTimeout: 45000,
-    transports: ['websocket', 'polling']
+    transports: ['websocket', 'polling'],
+    cookie: {
+        name: 'io',
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax'
+    }
+});
+
+// Add connection event logging
+io.engine.on("connection_error", (err) => {
+    console.log('Socket.io connection error:', err.code, err.message, err.context);
 });
 
 export const getReceiverSocketId = (receiverId) => {

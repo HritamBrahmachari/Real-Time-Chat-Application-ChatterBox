@@ -16,24 +16,46 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS configuration with your specific frontend URL
+// CORS and cookie configuration
 const FRONTEND_URL = "https://real-time-chat-application-chatter-box.vercel.app";
+const isProduction = process.env.NODE_ENV === "production";
 
-// Simple CORS setup with explicit frontend URL
+// Enhanced CORS setup
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  allowedHeaders: [
+    "Content-Type", 
+    "Authorization", 
+    "X-Requested-With", 
+    "Accept", 
+    "Origin",
+    "Access-Control-Allow-Headers"
+  ],
+  exposedHeaders: ["set-cookie"],
   optionsSuccessStatus: 200
 }));
 
-// Explicit OPTIONS handler for preflight requests
+// Cookie security settings
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use((req, res, next) => {
+  res.cookie('cookieName', 'cookieValue', {
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    domain: isProduction ? '.vercel.app' : undefined,
+    httpOnly: true
+  });
+  next();
+});
+
+// Explicit OPTIONS handler for preflight
 app.options('*', (req, res) => {
   res.header('Access-Control-Allow-Origin', FRONTEND_URL);
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Expose-Headers', 'set-cookie');
   res.status(200).send();
 });
 

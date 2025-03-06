@@ -32,28 +32,53 @@ const AppWrapper = () => {
             userId: authUser._id
           },
           withCredentials: true,
-          path: "/socket.io/", // Make sure this matches the server path
+          path: "/socket.io/",
           reconnectionAttempts: 5,
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
-          timeout: 20000, // Increase timeout
-          transports: ['websocket', 'polling'] // Try websocket first, fallback to polling
+          timeout: 20000,
+          transports: ['websocket', 'polling'],
+          autoConnect: false, // Don't connect automatically
+          forceNew: true, // Force a new connection
+          closeOnBeforeunload: true // Close connection when page is closed
         });
-        
+
+        // Set up event handlers
         socketio.on('connect', () => {
           console.log("Socket connected successfully with ID:", socketio.id);
           toast.success("Connected to chat server!");
         });
-        
+
         socketio.on('connect_error', (err) => {
           console.error('Socket connection error:', err.message);
-          toast.error(`Connection error: ${err.message}`);
+          toast.error(`Connection error: ${err.message}. Retrying...`);
         });
-        
+
+        socketio.on('connect_timeout', () => {
+          console.error('Socket connection timeout');
+          toast.error('Connection timeout. Please check your network.');
+        });
+
+        socketio.on('error', (error) => {
+          console.error('Socket error:', error);
+          toast.error('Socket error occurred');
+        });
+
+        socketio.on('disconnect', (reason) => {
+          console.log('Socket disconnected:', reason);
+          if (reason === 'io server disconnect') {
+            toast.error('Disconnected from server. Reconnecting...');
+            socketio.connect();
+          }
+        });
+
         socketio.on('getOnlineUsers', (onlineUsers) => {
           console.log("Received online users:", onlineUsers);
           setOnlineUsers(onlineUsers);
         });
+
+        // Now connect
+        socketio.connect();
         
         setSocket(socketio);
         
