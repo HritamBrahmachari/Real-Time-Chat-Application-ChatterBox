@@ -8,6 +8,7 @@ import io from "socket.io-client";
 import useUserStore from './stores/userStore';
 import useSocketStore from './stores/socketStore';
 import { BASE_URL } from '.';
+import toast from "react-hot-toast"; // Add this import
 
 // Create AppWrapper to use hooks that require router context
 const AppWrapper = () => {
@@ -23,17 +24,29 @@ const AppWrapper = () => {
   useEffect(() => {
     // These dependencies are intentionally omitted as they would cause unnecessary reconnections
     if(authUser){
-      const socketio = io(`${BASE_URL}`, {
+      const socketio = io(BASE_URL, {
           query:{
-            userId:authUser._id
-          }
+            userId: authUser._id
+          },
+          withCredentials: true,
+          path: '/socket.io/' // Make sure path matches server
       });
       setSocket(socketio);
+
+      // Add connection error handling
+      socketio.on('connect_error', (err) => {
+        console.error('Socket connection error:', err.message);
+        toast.error("Connection error. Please refresh the page.");
+      });
 
       socketio?.on('getOnlineUsers', (onlineUsers)=>{
         setOnlineUsers(onlineUsers)
       });
-      return () => socketio.close();
+
+      return () => {
+        console.log("Cleaning up socket connection");
+        socketio.close();
+      };
     } else {
       if(socket){
         socket.close();

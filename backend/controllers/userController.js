@@ -128,21 +128,28 @@ export const login = async (req, res) => {
 
         const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
 
-            return res.status(200).cookie("token", token, { 
-                maxAge: 1 * 24 * 60 * 60 * 1000, 
-                httpOnly: true, 
-                sameSite: 'lax',
-                secure: process.env.NODE_ENV === 'production'
-            }).json({
-                _id: user._id,
-                username: user.username,
-                fullName: user.fullName,
-                profilePhoto: user.profilePhoto,
-                hasSeenWelcome: user.hasSeenWelcome
-            });
+        // Set the cookie
+        res.cookie("token", token, { 
+            maxAge: 1 * 24 * 60 * 60 * 1000, 
+            httpOnly: true, 
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            path: '/'
+        });
+
+        // Return the token in the response body as well for environments where cookies don't work
+        return res.status(200).json({
+            _id: user._id,
+            username: user.username,
+            fullName: user.fullName,
+            profilePhoto: user.profilePhoto,
+            hasSeenWelcome: user.hasSeenWelcome,
+            token: token // Include token in response
+        });
 
     } catch (error) {
         console.log(error);
+        return res.status(500).json({ message: "Server error during login" });
     }
 }
 export const logout = (req, res) => {

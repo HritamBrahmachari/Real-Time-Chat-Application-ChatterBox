@@ -3,13 +3,12 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { Toaster } from "react-hot-toast";
-import axios from 'axios';
+import './utils/axiosConfig'; // Import axios config
 
-export const BASE_URL="https://backend-real-time-chat-application-chatter-box-te3b.vercel.app";
-
-// Global axios configuration
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = BASE_URL;
+// Define API base URL for other imports
+export const BASE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://backend-real-time-chat-application-chatter-box-te3b.vercel.app'
+  : 'http://localhost:5000';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

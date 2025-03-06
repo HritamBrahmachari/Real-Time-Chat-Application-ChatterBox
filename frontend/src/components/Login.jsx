@@ -36,12 +36,18 @@ const Login = () => {
       const response = await axios.post('/api/v1/user/login', user, {
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        withCredentials: true // Important for cookies
       });
       
       if (response?.data) {
         // Backend sends user data directly in response
         setAuthUser(response.data);
+        
+        // Store token in localStorage as a fallback for environments where cookies don't work
+        if (response.data.token) {
+          localStorage.setItem('auth_token', response.data.token);
+        }
         
         // Fetch recent conversations after login
         await fetchRecentConversations();
