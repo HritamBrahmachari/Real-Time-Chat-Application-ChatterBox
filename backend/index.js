@@ -20,43 +20,56 @@ app.use(cookieParser());
 const frontendURL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // CORS configuration with multiple allowed origins
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? [
-      frontendURL,
-      'http://localhost:3000',
-      'https://real-time-chat-application-chatter-box.vercel.app',
-      'https://chatterbox-frontend.vercel.app'
-    ]
-  : 'http://localhost:3000';
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://real-time-chat-application-chatter-box.vercel.app',
+  'https://chatterbox-frontend.vercel.app'
+];
 
 console.log('CORS allowed origins:', allowedOrigins);
 
+// Add pre-flight OPTIONS handler for CORS for all routes
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  
+  // Check if the origin is in our allowed list
+  if (allowedOrigins.includes(origin)) {
+    // Respond with appropriate CORS headers
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  }
+  
+  // Respond with 200 OK for OPTIONS requests
+  res.statusCode = 200;
+  res.end();
+});
+
+// Configure standard CORS for all other requests
 app.use(
   cors({
     origin: function(origin, callback) {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
       
-      if (typeof allowedOrigins === 'string') {
-        if (origin === allowedOrigins) {
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, origin);
+      } else {
+        console.log('Origin blocked by CORS:', origin);
+        // During development/debugging, allow all origins
+        if (process.env.NODE_ENV !== 'production') {
           return callback(null, true);
         }
-      } else if (allowedOrigins.indexOf(origin) !== -1) {
-        return callback(null, true);
+        return callback(new Error('CORS not allowed'), false);
       }
-      
-      console.log('Origin blocked by CORS:', origin);
-      return callback(null, true); // Temporarily allow all origins during debugging
     },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ['Access-Control-Allow-Origin']
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
-
-// Add CORS preflight options to handle preflight requests properly
-app.options('*', cors());
 
 // Add a health check route for vercel
 app.get("/api/health", (req, res) => {
@@ -68,7 +81,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Trust proxy in production
+// Trust proxy in production (important for cookies and HTTPS)
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
