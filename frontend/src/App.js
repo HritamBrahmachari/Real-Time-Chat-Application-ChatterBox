@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 import io from "socket.io-client";
 import useUserStore from './stores/userStore';
 import useSocketStore from './stores/socketStore';
-import { BASE_URL } from '.';
-import toast from "react-hot-toast"; // Add this import
+import toast from "react-hot-toast";
+import { BASE_URL } from './utils/axiosConfig'; // Import from axiosConfig
 
 // Create AppWrapper to use hooks that require router context
 const AppWrapper = () => {

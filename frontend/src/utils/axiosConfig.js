@@ -1,5 +1,9 @@
 import axios from 'axios';
-import { BASE_URL } from '../index';
+
+// Define BASE_URL directly in this file instead of importing it
+const BASE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://backend-real-time-chat-application-chatter-box-te3b.vercel.app'
+  : 'http://localhost:5000';
 
 // Configure axios defaults
 axios.defaults.baseURL = BASE_URL;
@@ -34,4 +38,6 @@ axios.interceptors.response.use(
   }
 );
 
+// Export the configured axios and BASE_URL
+export { BASE_URL };
 export default axios;
