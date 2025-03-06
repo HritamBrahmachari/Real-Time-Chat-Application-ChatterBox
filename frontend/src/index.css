@@ -1,41 +1,108 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base styles applied to all pages */
 body {
-  background: url(../public/green.webp);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* Common background for all pages */
+.app-page, .auth-page {
+  background: url(../public/green.webp);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Custom styles for auth forms with improved glassmorphism for better readability */
+.auth-card {
+  background: rgba(0, 0, 0, 0.5); /* Darker background for better text contrast */
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 450px;
+  width: 100%;
+}
+
+/* Text styles for better visibility on the background */
+.auth-text {
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* Stronger text shadow */
+  font-weight: 600; /* Slightly bolder text */
+}
+
+.auth-text-muted {
+  color: rgba(255, 255, 255, 0.9); /* Higher opacity for better readability */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Form input styles for better visibility */
+.auth-input {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.4); /* Brighter border */
+  color: white;
+  font-weight: 500; /* Medium weight for better readability */
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.8); /* Brighter placeholder text */
+  font-weight: 400; /* Regular weight for placeholder */
+}
+
+/* Improved button styles with better visibility */
+.auth-button {
+  background: linear-gradient(to right, rgba(21, 128, 61, 0.95), rgba(22, 163, 74, 0.95));
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.auth-button:hover {
+  background: linear-gradient(to right, rgba(22, 163, 74, 0.95), rgba(34, 197, 94, 0.95));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Add custom font styling for login/signup forms */
+.auth-title {
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.5px;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-div.chat-bubble{
 
+/* Existing chat styles */
+div.chat-bubble {
   background-color: rgb(38, 84, 38);
-  color: white
+  color: white;
 }
 
 ::-webkit-scrollbar {
-  /* Customize the scrollbar width */
-  width:6px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  /* Customize the scrollbar track */
   background-color: aliceblue;
 }
 
 ::-webkit-scrollbar-thumb {
-  /* Customize the scrollbar thumb */
   background: #000000;
   border-radius: 10px;
 }

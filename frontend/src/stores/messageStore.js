@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware'
 const useMessageStore = create(
   persist(
     (set) => ({
-      messages: null,
+      messages: [],
       setMessages: (messages) => set({ messages }),
     }),
     {

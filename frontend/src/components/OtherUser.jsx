@@ -8,35 +8,48 @@ const OtherUser = ({ user }) => {
     const addedUsers = useUserStore((state) => state.addedUsers);
     const setAddedUsers = useUserStore((state) => state.setAddedUsers);
     
-    const isOnline = onlineUsers?.includes(user._id);
-    const isAdded = addedUsers?.some(u => u._id === user._id);
+    // Make sure addedUsers is an array before checking
+    const safeAddedUsers = Array.isArray(addedUsers) ? addedUsers : [];
+    
+    const isOnline = Array.isArray(onlineUsers) && onlineUsers?.includes(user._id);
+    const isAdded = safeAddedUsers.some(u => u._id === user._id);
 
     const selectedUserHandler = (user) => {
         if (!isAdded) {
-            setAddedUsers([...(addedUsers || []), user]);
+            setAddedUsers([...safeAddedUsers, user]);
         }
         setSelectedUser(user);
     }
+    
     return (
         <>
-            <div className={`${selectedUser?._id === user?._id ? 'bg-green-900 text-white' : 'text-white'} flex gap-2 hover:text-black items-center hover:bg-zinc-200 rounded p-2 ${isAdded ? 'cursor-pointer' : ''}`}>
+            <div 
+                onClick={() => isAdded ? selectedUserHandler(user) : null}
+                className={`${selectedUser?._id === user?._id ? 'bg-green-900 text-white' : 'text-white'} flex gap-2 hover:text-black items-center hover:bg-zinc-200 rounded p-1.5 md:p-2 ${isAdded ? 'cursor-pointer' : ''}`}
+            >
                 <div className={`avatar ${isOnline ? 'online' : '' }`}>
-                    <div className='w-12 rounded-full'>
+                    <div className='w-10 md:w-12 rounded-full'>
                         <img src={user?.profilePhoto} alt="user-profile" />
                     </div>
                 </div>
-                <div className='flex flex-col flex-1'>
-                    <div className='flex justify-between gap-2 '>
-                        <p className="flex-1">{user?.fullName}</p>
+                <div className='flex flex-col flex-1 overflow-hidden'>
+                    <div className='flex justify-between gap-1 md:gap-2'>
+                        <p className="flex-1 truncate text-sm md:text-base">{user?.fullName}</p>
                         {!isAdded && (
                             <button 
-                                onClick={() => selectedUserHandler(user)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    selectedUserHandler(user);
+                                }}
                                 className="btn btn-xs bg-green-700 text-white hover:bg-green-800"
                             >
-                                Chat with
+                                Add
                             </button>
                         )}
                     </div>
+                    {isAdded && (
+                        <p className="text-xs text-gray-400 truncate">Click to chat</p>
+                    )}
                 </div>
             </div>
             <div className='divider my-0 py-0 h-1'></div>

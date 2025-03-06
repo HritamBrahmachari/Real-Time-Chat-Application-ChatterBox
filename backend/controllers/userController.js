@@ -70,20 +70,29 @@ export const login = async (req, res) => {
         if (!username || !password) {
             return res.status(400).json({ message: "All fields are required" });
         };
+
+        // Check if user exists and get their current hasSeenWelcome status
         const user = await User.findOne({ username });
         if (!user) {
             return res.status(400).json({
                 message: "Incorrect username or password",
                 success: false
-            })
+            });
         };
+
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
             return res.status(400).json({
                 message: "Incorrect username or password",
                 success: false
-            })
+            });
         };
+
+        // Always reset hasSeenWelcome if user logs in again
+        if (user.hasSeenWelcome) {
+            user.hasSeenWelcome = false;
+            await user.save();
+        }
 
         // Check if user is logging in for the first time
         if (!user.hasSeenWelcome) {
@@ -119,17 +128,18 @@ export const login = async (req, res) => {
 
         const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
 
-        return res.status(200).cookie("token", token, { 
-            maxAge: 1 * 24 * 60 * 60 * 1000, 
-            httpOnly: true, 
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
-        }).json({
-            _id: user._id,
-            username: user.username,
-            fullName: user.fullName,
-            profilePhoto: user.profilePhoto
-        });
+            return res.status(200).cookie("token", token, { 
+                maxAge: 1 * 24 * 60 * 60 * 1000, 
+                httpOnly: true, 
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production'
+            }).json({
+                _id: user._id,
+                username: user.username,
+                fullName: user.fullName,
+                profilePhoto: user.profilePhoto,
+                hasSeenWelcome: user.hasSeenWelcome
+            });
 
     } catch (error) {
         console.log(error);
@@ -158,3 +168,24 @@ export const getOtherUsers = async (req, res) => {
         console.log(error);
     }
 }
+
+export const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const user = await User.findById(userId).select("-password");
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json(user);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        return res.status(500).json({ message: "Error fetching user" });
+    }
+};
