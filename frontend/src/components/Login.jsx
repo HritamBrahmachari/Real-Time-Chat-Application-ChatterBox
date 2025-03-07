@@ -15,15 +15,20 @@ const Login = () => {
   const setAddedUsers = useUserStore((state) => state.setAddedUsers);
   const navigate = useNavigate();
 
-  const fetchRecentConversations = async () => {
+  const fetchRecentConversations = async (userId) => {
+    if (!userId) return;
+    
     try {
-      const response = await axios.get('/api/v1/message/conversations/recent');
+      console.log("Fetching recent conversations during login for user:", userId);
+      const response = await axios.get(`/api/v1/message/conversations/recent?userId=${userId}`);
+      
       if (response.data) {
-        setAddedUsers(Array.isArray(response.data) ? response.data : []);
+        const conversations = Array.isArray(response.data) ? response.data : [];
+        console.log(`Fetched ${conversations.length} recent conversations during login`);
+        setAddedUsers(conversations);
       }
     } catch (error) {
-      console.error("Failed to fetch recent conversations:", error);
-      // Don't show error toast here - less noisy
+      console.error("Failed to fetch recent conversations during login:", error);
     }
   };
 
@@ -34,26 +39,21 @@ const Login = () => {
     try {
       setIsLoading(true);
       
-      // Simple login request
+      // Simple login request - no authentication handling
       const response = await axios.post('/api/v1/user/login', user, {
         headers: {
           'Content-Type': 'application/json'
-        },
-        withCredentials: true // Important for cookies
+        }
       });
       
-      if (response?.data) {
+      if (response?.data && response.data._id) {
         // Store user in zustand state
         setAuthUser(response.data);
         
-        // Store token in localStorage for simplicity
-        if (response.data.token) {
-          localStorage.setItem('auth_token', response.data.token);
-        }
+        // Fetch recent conversations after login with the user ID
+        await fetchRecentConversations(response.data._id);
         
-        // Fetch recent conversations after login
-        await fetchRecentConversations();
-        
+        toast.success("Login successful!");
         navigate("/");
       } else {
         toast.error("Invalid response from server");

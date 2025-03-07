@@ -2,6 +2,7 @@ import { Conversation } from "../models/conversationModel.js";
 import { Message } from "../models/messageModel.js";
 import { User } from "../models/userModel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
+import mongoose from "mongoose";
 
 export const sendMessage = async (req,res) => {
     try {
@@ -95,15 +96,21 @@ export const getMessage = async (req,res) => {
         const conversation = await Conversation.findOne({
             participants:{$all : [senderId, receiverId]}
         }).populate("messages"); 
-        return res.status(200).json(conversation?.messages);
+        return res.status(200).json(conversation?.messages || []);
     } catch (error) {
         console.log(error);
+        return res.status(500).json({ message: "Error fetching messages" });
     }
 }
 
 export const getRecentConversations = async (req, res) => {
     try {
         const userId = req.id;
+        
+        // Check if userId is valid
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Valid user ID is required" });
+        }
         
         // Find conversations where the user is a participant
         const conversations = await Conversation.find({
@@ -121,9 +128,11 @@ export const getRecentConversations = async (req, res) => {
             return validParticipants.length > 0 ? validParticipants[0] : null;
         }).filter(partner => partner !== null);
         
+        console.log(`Found ${chatPartners.length} recent conversations for user ${userId}`);
+        
         return res.status(200).json(chatPartners);
     } catch (error) {
-        console.log(error);
+        console.log("Error fetching conversations:", error);
         return res.status(500).json({ message: "Error fetching conversations" });
     }
 }

@@ -22,62 +22,70 @@ const Sidebar = () => {
     const socket = useSocketStore((state) => state.socket);
     const setSocket = useSocketStore((state) => state.setSocket);
     const { searchUsers } = useGetOtherUsers();
+    const [isLoadingConversations, setIsLoadingConversations] = useState(false);
 
     const navigate = useNavigate();
     
-    // Fetch recent conversations when component mounts
+    // Fetch recent conversations when component mounts or when user changes
     useEffect(() => {
-        if (authUser) {
-            // Make sure addedUsers is an array and check if it's empty
-            const safeAddedUsers = Array.isArray(addedUsers) ? addedUsers : [];
-            if (safeAddedUsers.length === 0) {
-                fetchRecentConversations();
-            }
+        if (authUser && authUser._id) {
+            fetchRecentConversations();
         }
-    }, [authUser, addedUsers]);
+    }, [authUser?._id]);
     
     const fetchRecentConversations = async () => {
+        if (!authUser || !authUser._id || isLoadingConversations) {
+            return;
+        }
+        
         try {
-            const response = await axios.get('/api/v1/message/conversations/recent');
+            setIsLoadingConversations(true);
+            console.log("Fetching recent conversations for user:", authUser._id);
+            
+            const response = await axios.get(`/api/v1/message/conversations/recent?userId=${authUser._id}`);
+            
             if (response.data) {
-                // Always initialize as an array
-                setAddedUsers(Array.isArray(response.data) ? response.data : []);
+                const conversations = Array.isArray(response.data) ? response.data : [];
+                console.log(`Fetched ${conversations.length} recent conversations`);
+                setAddedUsers(conversations);
             }
         } catch (error) {
             console.error("Failed to fetch recent conversations:", error);
-            // Initialize as empty array on error
-            setAddedUsers([]);
+            toast.error("Could not load your recent chats");
+        } finally {
+            setIsLoadingConversations(false);
         }
     };
 
     const logoutHandler = async () => {
         try {
-            // First close socket to prevent any websocket errors during logout
+            // Close socket
             if (socket) {
                 socket.close();
                 setSocket(null);
             }
             
-            // Clear all state before making the logout request
+            // Clear all state
             setAuthUser(null);
             setMessages([]);
             setOtherUsers(null);
             setSelectedUser(null);
             setAddedUsers([]);
             
-            // Make the logout request
-            const res = await axios.get('/api/v1/user/logout');
+            try {
+                // Simple logout without auth requirements
+                await axios.get('/api/v1/user/logout');
+            } catch (error) {
+                // Ignore errors during logout
+            }
             
-            // Show success message and navigate
-            toast.success(res.data.message);
+            toast.success("Logged out successfully");
             navigate("/login");
             
-            // Clear localStorage
-            localStorage.removeItem('user-storage');
-            localStorage.removeItem('message-storage');
+            // Clear localStorage for good measure
+            localStorage.clear();
         } catch (error) {
-            toast.error("Error logging out. Please try again.");
-            console.error("Logout error:", error);
+            toast.error("Error logging out.");
         }
     }
 
@@ -107,7 +115,11 @@ const Sidebar = () => {
             
             {/* Make this div scrollable with flex-1 */}
             <div className="flex-1 overflow-auto">
-                <OtherUsers/> 
+                {isLoadingConversations ? (
+                    <div className="text-center py-4 text-gray-400">Loading chats...</div>
+                ) : (
+                    <OtherUsers />
+                )}
             </div>
             
             {/* Keep logout button at bottom */}

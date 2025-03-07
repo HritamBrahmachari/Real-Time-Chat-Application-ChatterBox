@@ -1,6 +1,5 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 export const register = async (req, res) => {
@@ -36,6 +35,7 @@ export const register = async (req, res) => {
         })
     } catch (error) {
         console.log(error);
+        return res.status(500).json({ message: "Error creating account" });
     }
 };
 
@@ -93,31 +93,13 @@ export const login = async (req, res) => {
         // Handle welcome message logic if needed
         await handleWelcomeMessage(user);
 
-        // Create a simple token with just the userId
-        const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET_KEY,
-            { expiresIn: '30d' } // Longer expiration for better user experience
-        );
-
-        // Set cookie with proper cross-domain settings
-        const isProduction = process.env.NODE_ENV === 'production';
-        res.cookie("token", token, { 
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-            httpOnly: true,
-            path: '/',
-            sameSite: isProduction ? 'none' : 'lax', // Important for cross-domain
-            secure: isProduction, // Must be true for sameSite='none'
-        });
-
-        // Return user data with token for client-side storage
+        // Simply return user data without any authentication tokens
         return res.status(200).json({
             _id: user._id,
             username: user.username,
             fullName: user.fullName,
             profilePhoto: user.profilePhoto,
-            hasSeenWelcome: user.hasSeenWelcome,
-            token: token // Include token in response for client-side storage
+            hasSeenWelcome: user.hasSeenWelcome
         });
 
     } catch (error) {
@@ -169,24 +151,10 @@ async function handleWelcomeMessage(user) {
 }
 
 export const logout = (req, res) => {
-    try {
-        // Clear cookie with same settings as when setting it
-        const isProduction = process.env.NODE_ENV === 'production';
-        res.cookie("token", "", { 
-            maxAge: 0,
-            httpOnly: true,
-            path: '/',
-            sameSite: isProduction ? 'none' : 'lax',
-            secure: isProduction
-        });
-        
-        return res.status(200).json({
-            message: "Logged out successfully."
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Error during logout" });
-    }
+    // Simplified logout - no cookies or tokens to clear
+    return res.status(200).json({
+        message: "Logged out successfully."
+    });
 }
 
 export const getOtherUsers = async (req, res) => {
@@ -196,6 +164,7 @@ export const getOtherUsers = async (req, res) => {
         return res.status(200).json(otherUsers);
     } catch (error) {
         console.log(error);
+        return res.status(500).json({ message: "Error fetching users" });
     }
 }
 

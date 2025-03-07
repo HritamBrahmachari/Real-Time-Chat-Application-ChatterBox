@@ -1,35 +1,34 @@
-import jwt from "jsonwebtoken";
+import mongoose from 'mongoose';
 
 const isAuthenticated = (req, res, next) => {
-    // Skip authentication check for OPTIONS requests (CORS preflight)
-    if (req.method === 'OPTIONS') {
-        return next();
-    }
-
     try {
-        // Check for token in various places - simplified approach
-        const token = req.cookies.token || 
-                     (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') 
-                      ? req.headers.authorization.split(' ')[1] 
-                      : null);
+        // Get user ID from the request body, params, or query
+        let userId = req.params.id || req.query.userId;
         
-        if (!token) {
-            console.log("Authentication failed: No token provided");
-            return res.status(401).json({ message: "Please login to access this resource" });
+        // Check if userId exists and is a valid ObjectId
+        if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+            req.id = userId;
+        } else {
+            // If we don't have a valid userId, check if this is a request that needs one
+            const needsUserId = req.originalUrl.includes('/message/') || 
+                               req.originalUrl.includes('/conversations/');
+            
+            if (needsUserId) {
+                // For endpoints that need a valid user ID, return an error
+                return res.status(400).json({ 
+                    message: "A valid user ID is required for this operation" 
+                });
+            } else {
+                // For other endpoints, allow the request to proceed
+                // This is for routes like /api/v1/user/register or /api/v1/user/login
+                console.log("Non-authenticated route accessed");
+            }
         }
         
-        try {
-            // Simple token verification
-            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-            req.id = decoded.userId;
-            next();
-        } catch (jwtError) {
-            console.log("Authentication failed: Invalid token -", jwtError.message);
-            return res.status(401).json({ message: "Invalid or expired token" });
-        }
+        next();
     } catch (error) {
-        console.error("Authentication error:", error);
-        return res.status(401).json({ message: "Authentication failed" });
+        console.error("Error in isAuthenticated middleware:", error);
+        return res.status(500).json({ message: "Server error" });
     }
 };
 

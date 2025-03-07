@@ -8,7 +8,7 @@ const router = express.Router();
 // CORS configuration specifically for login endpoint
 const FRONTEND_URL = "https://real-time-chat-application-chatter-box.vercel.app";
 const loginCors = cors({
-  origin: FRONTEND_URL,
+  origin: FRONTEND_URL || "http://localhost:3000",
   credentials: true,
   methods: ["POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
