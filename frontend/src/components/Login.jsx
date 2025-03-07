@@ -19,30 +19,11 @@ const Login = () => {
     try {
       const response = await axios.get('/api/v1/message/conversations/recent');
       if (response.data) {
-        setAddedUsers(response.data);
+        setAddedUsers(Array.isArray(response.data) ? response.data : []);
       }
     } catch (error) {
       console.error("Failed to fetch recent conversations:", error);
       // Don't show error toast here - less noisy
-    }
-  };
-
-  // Function to safely store token in both storage types for cross-mode compatibility
-  const storeAuthToken = (token) => {
-    // Try localStorage first
-    try {
-      localStorage.setItem('auth_token', token);
-      console.log("Token stored in localStorage");
-    } catch (err) {
-      console.warn("Could not store token in localStorage", err);
-    }
-    
-    // Also try sessionStorage as a backup (works better in incognito)
-    try {
-      sessionStorage.setItem('auth_token', token);
-      console.log("Token stored in sessionStorage");
-    } catch (err) {
-      console.warn("Could not store token in sessionStorage", err);
     }
   };
 
@@ -52,6 +33,8 @@ const Login = () => {
     
     try {
       setIsLoading(true);
+      
+      // Simple login request
       const response = await axios.post('/api/v1/user/login', user, {
         headers: {
           'Content-Type': 'application/json'
@@ -60,12 +43,12 @@ const Login = () => {
       });
       
       if (response?.data) {
-        // Backend sends user data directly in response
+        // Store user in zustand state
         setAuthUser(response.data);
         
-        // Store token in both storage options for better compatibility
+        // Store token in localStorage for simplicity
         if (response.data.token) {
-          storeAuthToken(response.data.token);
+          localStorage.setItem('auth_token', response.data.token);
         }
         
         // Fetch recent conversations after login

@@ -38,6 +38,7 @@ export const register = async (req, res) => {
         console.log(error);
     }
 };
+
 export const searchUsers = async (req, res) => {
     try {
         const { query } = req.query;
@@ -71,7 +72,7 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         };
 
-        // Check if user exists and get their current hasSeenWelcome status
+        // Check if user exists
         const user = await User.findOne({ username });
         if (!user) {
             return res.status(400).json({
@@ -80,6 +81,7 @@ export const login = async (req, res) => {
             });
         };
 
+        // Simple password comparison
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
             return res.status(400).json({
@@ -88,7 +90,43 @@ export const login = async (req, res) => {
             });
         };
 
-        // Always reset hasSeenWelcome if user logs in again
+        // Handle welcome message logic if needed
+        await handleWelcomeMessage(user);
+
+        // Create a simple token with just the userId
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: '7d' } // Longer expiration for simplicity
+        );
+
+        // Set cookie with simpler options
+        res.cookie("token", token, { 
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            httpOnly: true,
+            path: '/'
+        });
+
+        // Return user data with token for client-side storage
+        return res.status(200).json({
+            _id: user._id,
+            username: user.username,
+            fullName: user.fullName,
+            profilePhoto: user.profilePhoto,
+            hasSeenWelcome: user.hasSeenWelcome,
+            token: token // Include token in response for client-side storage
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Server error during login" });
+    }
+}
+
+// Helper function to handle welcome message
+async function handleWelcomeMessage(user) {
+    try {
+        // Reset hasSeenWelcome if user logs in again
         if (user.hasSeenWelcome) {
             user.hasSeenWelcome = false;
             await user.save();
@@ -121,51 +159,25 @@ export const login = async (req, res) => {
             user.hasSeenWelcome = true;
             await user.save();
         }
-
-        const tokenData = {
-            userId: user._id
-        };
-
-        const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
-
-        // Set the cookie
-        res.cookie("token", token, { 
-            maxAge: 1 * 24 * 60 * 60 * 1000, 
-            httpOnly: true, 
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            path: '/'
-        });
-
-        // Return the token in the response body as well for environments where cookies don't work
-        return res.status(200).json({
-            _id: user._id,
-            username: user.username,
-            fullName: user.fullName,
-            profilePhoto: user.profilePhoto,
-            hasSeenWelcome: user.hasSeenWelcome,
-            token: token // Include token in response
-        });
-
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Server error during login" });
+        console.error("Error handling welcome message:", error);
+        // Continue even if welcome message fails
     }
 }
+
 export const logout = (req, res) => {
     try {
-        return res.status(200).cookie("token", "", { 
-            maxAge: 0,
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
-        }).json({
-            message: "logged out successfully."
-        })
+        // Simple cookie clearing
+        res.cookie("token", "", { maxAge: 0 });
+        return res.status(200).json({
+            message: "Logged out successfully."
+        });
     } catch (error) {
         console.log(error);
+        return res.status(500).json({ message: "Error during logout" });
     }
 }
+
 export const getOtherUsers = async (req, res) => {
     try {
         const loggedInUserId = req.id;

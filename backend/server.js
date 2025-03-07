@@ -2,7 +2,6 @@ import app from './index.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
 
 // Load environment variables
 dotenv.config();
@@ -30,22 +29,8 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('New socket connection:', socket.id);
   
-  // Get user ID from query or auth token
-  let userId = socket.handshake.query.userId;
-  const authToken = socket.handshake.auth?.token || socket.handshake.query?.token;
-  
-  // If no userId but we have a token, try to extract userId from token
-  if (!userId && authToken) {
-    try {
-      const decoded = jwt.verify(authToken, process.env.JWT_SECRET_KEY);
-      if (decoded && decoded.userId) {
-        userId = decoded.userId;
-        console.log(`Authenticated user ${userId} from token`);
-      }
-    } catch (err) {
-      console.log('Invalid token in socket connection:', err.message);
-    }
-  }
+  // Get user ID from query params - simplified approach
+  const userId = socket.handshake.query.userId;
   
   if (userId) {
     // Store user's socket id mapping

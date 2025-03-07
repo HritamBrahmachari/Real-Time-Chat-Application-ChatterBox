@@ -8,7 +8,7 @@ import io from "socket.io-client";
 import useUserStore from './stores/userStore';
 import useSocketStore from './stores/socketStore';
 import toast from "react-hot-toast";
-import { BASE_URL, checkApiHealth, getAuthToken } from './utils/axiosConfig';
+import { BASE_URL, checkApiHealth } from './utils/axiosConfig';
 
 // Create AppWrapper to use hooks that require router context
 const AppWrapper = () => {
@@ -46,21 +46,14 @@ const AppWrapper = () => {
       try {
         console.log("Attempting to connect to socket at:", BASE_URL);
         
-        // Get auth token for socket authentication
-        const token = getAuthToken();
-        
+        // Simplified socket connection - only using userId
         const socketio = io(BASE_URL, {
           query: {
-            userId: authUser._id,
-            token: token // Include token in query
-          },
-          auth: {
-            token: token // Include token in auth object (newer socket.io versions)
+            userId: authUser._id
           },
           withCredentials: true,
           reconnectionAttempts: 3,
           timeout: 10000,
-          transports: ['websocket', 'polling']
         });
         
         socketio.on('connect', () => {

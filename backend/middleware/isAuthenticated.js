@@ -7,28 +7,24 @@ const isAuthenticated = (req, res, next) => {
     }
 
     try {
-        // First check the Authorization header (for API clients)
-        const authHeader = req.headers.authorization;
-        let token;
-        
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            token = authHeader.split(' ')[1];
-        } else {
-            // If no Authorization header, check cookies (for browser clients)
-            token = req.cookies.token;
-        }
+        // Check for token in various places - simplified approach
+        const token = req.cookies.token || 
+                     (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') 
+                      ? req.headers.authorization.split(' ')[1] 
+                      : null);
         
         if (!token) {
             return res.status(401).json({ message: "Please login to access this resource" });
         }
         
-        const decode = jwt.verify(token, process.env.JWT_SECRET_KEY);
-        if (!decode) {
-            return res.status(401).json({ message: "Invalid token" });
+        try {
+            // Simple token verification
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+            req.id = decoded.userId;
+            next();
+        } catch (jwtError) {
+            return res.status(401).json({ message: "Invalid or expired token" });
         }
-        
-        req.id = decode.userId;
-        next();
     } catch (error) {
         console.error("Authentication error:", error);
         return res.status(401).json({ message: "Authentication failed" });
