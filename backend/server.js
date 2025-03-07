@@ -64,12 +64,13 @@ export const getReceiverSocketId = (receiverId) => {
   return userSocketMap[receiverId];
 };
 
-// Get port from environment or use default
-const PORT = process.env.PORT || 5000;
+// Get port from environment or use default (10000 for Render)
+const PORT = process.env.PORT || 10000;
+const HOST = '0.0.0.0'; // Bind to all network interfaces
 
-// Start the server
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Start the server with proper binding
+server.listen(PORT, HOST, () => {
+  console.log(`Server is running on ${HOST}:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Production frontend: ${PRODUCTION_FRONTEND_URL}`);
   console.log(`Local frontend: ${LOCAL_FRONTEND_URL}`);
