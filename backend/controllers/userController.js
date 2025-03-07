@@ -97,14 +97,17 @@ export const login = async (req, res) => {
         const token = jwt.sign(
             { userId: user._id },
             process.env.JWT_SECRET_KEY,
-            { expiresIn: '7d' } // Longer expiration for simplicity
+            { expiresIn: '30d' } // Longer expiration for better user experience
         );
 
-        // Set cookie with simpler options
+        // Set cookie with proper cross-domain settings
+        const isProduction = process.env.NODE_ENV === 'production';
         res.cookie("token", token, { 
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
             httpOnly: true,
-            path: '/'
+            path: '/',
+            sameSite: isProduction ? 'none' : 'lax', // Important for cross-domain
+            secure: isProduction, // Must be true for sameSite='none'
         });
 
         // Return user data with token for client-side storage
@@ -167,8 +170,16 @@ async function handleWelcomeMessage(user) {
 
 export const logout = (req, res) => {
     try {
-        // Simple cookie clearing
-        res.cookie("token", "", { maxAge: 0 });
+        // Clear cookie with same settings as when setting it
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie("token", "", { 
+            maxAge: 0,
+            httpOnly: true,
+            path: '/',
+            sameSite: isProduction ? 'none' : 'lax',
+            secure: isProduction
+        });
+        
         return res.status(200).json({
             message: "Logged out successfully."
         });

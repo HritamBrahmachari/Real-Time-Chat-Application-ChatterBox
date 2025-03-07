@@ -14,6 +14,7 @@ const isAuthenticated = (req, res, next) => {
                       : null);
         
         if (!token) {
+            console.log("Authentication failed: No token provided");
             return res.status(401).json({ message: "Please login to access this resource" });
         }
         
@@ -23,6 +24,7 @@ const isAuthenticated = (req, res, next) => {
             req.id = decoded.userId;
             next();
         } catch (jwtError) {
+            console.log("Authentication failed: Invalid token -", jwtError.message);
             return res.status(401).json({ message: "Invalid or expired token" });
         }
     } catch (error) {

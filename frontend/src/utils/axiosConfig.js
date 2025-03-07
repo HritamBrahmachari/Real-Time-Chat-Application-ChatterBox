@@ -34,28 +34,13 @@ axios.defaults.timeout = 15000; // 15 second timeout
 
 // Helper to get token from storage (supports both storage types)
 const getAuthToken = () => {
-  let token;
-  
-  try {
-    token = localStorage.getItem('auth_token');
-  } catch (e) {
-    console.log('Could not access localStorage');
-  }
-  
-  if (!token) {
-    try {
-      token = sessionStorage.getItem('auth_token');
-    } catch (e) {
-      console.log('Could not access sessionStorage');
-    }
-  }
-  
-  return token;
+  return localStorage.getItem('auth_token') || '';
 };
 
 // Add a request interceptor to add token if available
 axios.interceptors.request.use(
   config => {
+    // Always include the token in the Authorization header if available
     const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -67,6 +52,9 @@ axios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// Counter to prevent multiple auth warnings
+let authWarningShown = 0;
 
 // Add a response interceptor to handle common errors
 axios.interceptors.response.use(
@@ -84,26 +72,18 @@ axios.interceptors.response.use(
     } else if (error.response.status === 401) {
       console.error('Authentication Error:', error);
       
-      // Only redirect if not already on login page
-      if (window.location.pathname !== '/login') {
+      // Only redirect if not already on login page and not showing too many warnings
+      if (window.location.pathname !== '/login' && authWarningShown < 1) {
+        authWarningShown++;
         toast.error('Authentication expired. Please login again.');
         
-        // Clear tokens from both storage locations
-        try {
-          localStorage.removeItem('auth_token');
-        } catch (e) {
-          console.log('Could not access localStorage');
-        }
-        
-        try {
-          sessionStorage.removeItem('auth_token');
-        } catch (e) {
-          console.log('Could not access sessionStorage');
-        }
+        // Clear token
+        localStorage.removeItem('auth_token');
         
         // Redirect to login after a short delay
         setTimeout(() => {
           window.location.href = '/login';
+          authWarningShown = 0; // Reset after redirect
         }, 1000);
       }
     } else if (error.response.status >= 500) {

@@ -17,13 +17,14 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
       frontendURL,
       'http://localhost:3000',
       'https://real-time-chat-application-chatter-box.vercel.app',
-      'https://chatterbox-frontend.vercel.app'
+      'https://chatterbox-frontend.vercel.app',
+      'https://stunning-longma-a00b96.netlify.app' // Add your Netlify domain
     ]
   : 'http://localhost:3000';
 
 console.log('CORS allowed origins:', allowedOrigins);
 
-// Configure CORS with a dynamic handler for origins
+// Configure CORS with improved settings for cross-domain cookies
 const corsOptions = {
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -38,10 +39,11 @@ const corsOptions = {
     }
     
     console.log('Origin blocked by CORS:', origin);
-    return callback(null, true); // Temporarily allow all origins during debugging
+    // During development, allow all origins
+    return callback(null, true);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true,
+  credentials: true, // Critical for cookies
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Access-Control-Allow-Origin']
 };
@@ -52,7 +54,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Add CORS preflight options to handle preflight requests properly
-app.options('*', cors());
+app.options('*', cors(corsOptions));
 
 // Add a health check route for vercel
 app.get("/api/health", (req, res) => {

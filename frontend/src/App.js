@@ -8,7 +8,7 @@ import io from "socket.io-client";
 import useUserStore from './stores/userStore';
 import useSocketStore from './stores/socketStore';
 import toast from "react-hot-toast";
-import { BASE_URL, checkApiHealth } from './utils/axiosConfig';
+import { BASE_URL, checkApiHealth, getAuthToken } from './utils/axiosConfig';
 
 // Create AppWrapper to use hooks that require router context
 const AppWrapper = () => {
@@ -46,24 +46,24 @@ const AppWrapper = () => {
       try {
         console.log("Attempting to connect to socket at:", BASE_URL);
         
-        // Simplified socket connection - only using userId
+        // Even simpler socket connection - only essential options
         const socketio = io(BASE_URL, {
           query: {
             userId: authUser._id
           },
-          withCredentials: true,
-          reconnectionAttempts: 3,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
           timeout: 10000,
+          transports: ['websocket', 'polling']
         });
         
         socketio.on('connect', () => {
           console.log("Socket connected successfully with ID:", socketio.id);
-          toast.success("Connected to chat server!");
         });
         
         socketio.on('connect_error', (err) => {
           console.error('Socket connection error:', err.message);
-          toast.error(`Connection error: ${err.message}`);
         });
         
         socketio.on('getOnlineUsers', (onlineUsers) => {
@@ -80,7 +80,6 @@ const AppWrapper = () => {
         };
       } catch (error) {
         console.error("Socket initialization error:", error);
-        toast.error("Failed to connect to chat server");
       }
     } else {
       if(socket){
