@@ -1,12 +1,19 @@
 import MessageContainer from "../../components/messages/MessageContainer";
 import Sidebar from "../../components/sidebar/Sidebar";
+import ThemeToggle from "../../components/ThemeToggle";
+import { useThemeContext } from "../../context/ThemeContext";
 
 const Home = () => {
+  const { isDarkMode } = useThemeContext();
+  
   return (
-    <div className="flex sm:h-[450px] md:h-[550px] rounded-md bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-20 border border-gray-500">
-      <Sidebar />
-      <MessageContainer />
+    <div className="flex items-center justify-center w-full min-h-screen p-4">
+      <div className="chat-container w-full flex h-[90vh]">
+        <Sidebar />
+        <MessageContainer />
+      </div>
     </div>
   );
 };
+
 export default Home;

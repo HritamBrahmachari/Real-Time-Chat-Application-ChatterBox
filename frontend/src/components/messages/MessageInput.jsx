@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { BsSend } from "react-icons/bs";
-
+import { IoSend } from "react-icons/io5";
+import { BsEmojiSmile } from "react-icons/bs";
+import { IoAttach } from "react-icons/io5";
 import useSendMessage from "../../hooks/useSendMessage";
 
 const MessageInput = () => {
@@ -9,33 +10,46 @@ const MessageInput = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message) return;
+    if (!message.trim()) return;
     await sendMessage(message);
     setMessage("");
   };
 
   return (
-    <form className="px-4 my-3" onSubmit={handleSubmit}>
-      <div className="w-full relative">
+    <div className="p-4">
+      <form onSubmit={handleSubmit} className="message-input-container">
+        <button 
+          type="button" 
+          className="btn-icon"
+        >
+          <BsEmojiSmile />
+        </button>
+        <button 
+          type="button" 
+          className="btn-icon"
+        >
+          <IoAttach />
+        </button>
         <input
           type="text"
-          className="border text-sm rounded-lg block w-full p-2.5  bg-[#466B7C] border-gray-600 text-white"
-          placeholder="Send a message"
+          className="message-input"
+          placeholder="Type a message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
         <button
           type="submit"
-          className="absolute inset-y-0 end-0 flex items-center pe-3"
+          className="message-send-button"
+          disabled={loading || !message.trim()}
         >
           {loading ? (
-            <div className="loading loading-spinner"></div>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           ) : (
-            <BsSend />
+            <IoSend />
           )}
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
 

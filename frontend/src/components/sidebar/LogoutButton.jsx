@@ -5,16 +5,21 @@ const LogoutButton = () => {
   const { loading, logout } = useLogout();
 
   return (
-    <div className="mt-auto">
-      {!loading ? (
-        <BiLogOut
-          className="w-6 h-6 text-white cursor-pointer"
-          onClick={logout}
-        />
+    <button 
+      onClick={logout}
+      disabled={loading}
+      className="logout-button"
+    >
+      {loading ? (
+        <div className="w-5 h-5 border-t-2 border-r-2 border-primary-500 rounded-full animate-spin"></div>
       ) : (
-        <span className="loading loading-spinner"></span> //daisy UI
+        <>
+          <BiLogOut className="text-xl" />
+          <span>Logout</span>
+        </>
       )}
-    </div>
+    </button>
   );
 };
+
 export default LogoutButton;

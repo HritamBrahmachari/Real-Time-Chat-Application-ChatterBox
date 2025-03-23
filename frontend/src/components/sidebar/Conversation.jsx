@@ -1,35 +1,53 @@
 import React from "react";
 import useConversation from "../../zustand/useConversation";
 import { useSocketContext } from "../../context/socketContext";
+
+// Helper function to get initials
+const getInitials = (name) => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map(part => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
 const Conversation = ({ conversation, lastIdx, emoji }) => {
   const { selectedConversation, setSelectedConversation } = useConversation();
   const isSelected = selectedConversation?._id === conversation._id;
   const { onlineUsers } = useSocketContext();
   const isOnline = onlineUsers.includes(conversation._id);
+  
   return (
-    <>
-      <div
-        className={`flex gap-2 items-center hover:bg-sky-500 rounded p-2 py-1 cursor-pointer
-				${isSelected ? "bg-sky-500" : ""}
-			`}
-        onClick={() => setSelectedConversation(conversation)}
-      >
-        <div className={`avatar ${isOnline ? "online" : ""}`}>
-          <div className="w-12 rounded-full">
-            <img src={conversation.profilePic} alt="user avatar" />
-          </div>
+    <div 
+      className={`conversation-item ${isSelected ? "conversation-item-active" : ""}`}
+      onClick={() => setSelectedConversation(conversation)}
+    >
+      <div className="relative">
+        <div className="user-avatar-initials">
+          {getInitials(conversation.fullName)}
         </div>
-
-        <div className="flex flex-col flex-1">
-          <div className="flex gap-3 justify-between">
-            <p className="font-bold text-gray-200">{conversation.fullName}</p>
-            <span className="text-xl">{emoji}</span>
-          </div>
-        </div>
+        {isOnline && (
+          <span className="online-indicator"></span>
+        )}
       </div>
-
-      {!lastIdx && <div className="divider my-0 py-0 h-1" />}
-    </>
+      
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between">
+          <h3 className="font-medium text-white truncate">
+            {conversation.fullName}
+          </h3>
+        </div>
+        <p className="text-xs text-gray-400 truncate">
+          {isOnline ? "Online" : "Offline"}
+        </p>
+      </div>
+      
+      <div>
+        <span className="text-xs text-gray-400">{emoji}</span>
+      </div>
+    </div>
   );
 };
 

@@ -8,6 +8,21 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
+    // Handle system chat (we don't actually save system messages to the database)
+    if (receiverId === "system") {
+      // Create a fake message response but don't save it
+      const systemMessage = {
+        _id: "system-" + Date.now(),
+        senderId,
+        receiverId: "system",
+        message,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      return res.status(201).json(systemMessage);
+    }
+
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
@@ -53,6 +68,11 @@ export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
     const senderId = req.user._id;
+
+    // Handle system chat (no need to query database for system chat)
+    if (userToChatId === "system") {
+      return res.status(200).json([]);
+    }
 
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, userToChatId] },

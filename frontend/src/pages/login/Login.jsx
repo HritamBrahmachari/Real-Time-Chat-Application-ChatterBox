@@ -13,48 +13,51 @@ const Login = () => {
   };
   return (
     <div className="flex flex-col items-center justify-center min-w-96 mx-auto">
-      <div className="w-full p-6 bg-blue-300 rounded-md bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-10 border border-gray-400">
-        <h1 className="text-3xl font-semibold text-center text-black">
-          Login
-          <span className="text-[#466B7C]"> ChatApp</span>
+      <div className="w-full p-6 rounded-md border border-gray-400 shadow-md bg-white bg-opacity-80">
+        <h1 className="text-3xl font-semibold text-center text-black mb-4">
+          Login to
+          <span className="text-[#466B7C]"> ChatterBox</span>
         </h1>
 
         <form onSubmit={handleSubmit}>
-          <div>
+          <div className="mb-3">
             <label className="label p-2">
-              <span className="text-base label-text">Username</span>
+              <span className="text-base font-medium text-gray-700">Username</span>
             </label>
             <input
               type="text"
               placeholder="Enter username"
-              className="w-full input input-bordered h-10"
+              className="w-full input input-bordered h-10 bg-white"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
 
-          <div>
+          <div className="mb-3">
             <label className="label">
-              <span className="text-base label-text">Password</span>
+              <span className="text-base font-medium text-gray-700">Password</span>
             </label>
             <input
               type="password"
               placeholder="Enter Password"
-              className="w-full input input-bordered h-10"
+              className="w-full input input-bordered h-10 bg-white"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <Link
-            to="/signup"
-            className="text-sm  hover:underline hover:text-sky-600 mt-2 inline-block"
-          >
-            {"Don't"} have an account?
-          </Link>
+          
+          <div className="mt-5 mb-4 text-center">
+            <Link
+              to="/signup"
+              className="text-blue-600 font-medium hover:underline hover:text-blue-800"
+            >
+              Don't have an account? <span className="font-semibold">Sign Up</span>
+            </Link>
+          </div>
 
           <div>
             <button
-              className="btn btn-block btn-sm mt-2 border border-slate-700 hover:bg-sky-300"
+              className="btn btn-block btn-sm mt-2 bg-blue-500 text-white hover:bg-blue-600 border-none"
               disabled={loading}
             >
               {loading ? (
